@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}Catálogo · Cafetería Fiores{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Catálogo</h1>
+
+<form method="get" class="row g-2 mb-4">
+  <div class="col-12 col-md-6">
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por nombre…">
+  </div>
+  <div class="col-8 col-md-4">
+    <select name="categoria" class="form-select">
+      <option value="">Todas las categorías</option>
+      {% for c in categorias %}
+        <option value="{{ c.pk }}" {% if categoria_id == c.pk|stringformat:"d" %}selected{% endif %}>{{ c.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-4 col-md-2 d-grid">
+    <button type="submit" class="btn btn-verde">Filtrar</button>
+  </div>
+  {% if q or categoria_id %}
+    <div class="col-12"><a href="{% url 'catalogo' %}" class="small">Limpiar filtros</a></div>
+  {% endif %}
+</form>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+  {% for p in productos %}
+    <div class="col">
+      <div class="card h-100 shadow-sm {% if p.stock == 0 %}producto-agotado{% endif %}">
+        <div class="card-body d-flex flex-column">
+          <span class="badge bg-secondary align-self-start mb-2">{{ p.categoria.nombre }}</span>
+          <h2 class="h5 card-title">{{ p.nombre }}</h2>
+          <p class="fs-5 fw-semibold mb-3">{{ p.precio|clp }}</p>
+          <div class="mt-auto">
+            {% if p.stock == 0 %}
+              <span class="badge bg-danger">Agotado</span>
+              <button type="button" class="btn btn-secondary btn-sm float-end" disabled>No disponible</button>
+            {% else %}
+              <small class="text-muted">Stock: {{ p.stock }}</small>
+              {# RF-05: aquí va el formulario para agregar al carrito #}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12"><div class="alert alert-info">No se encontraron productos.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

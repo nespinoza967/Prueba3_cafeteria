@@ -7,3 +7,4 @@ Extra: user admin pass: 1231
  entrando como cliente1 y como encargado (contraseña fiores123).
 3. vamos con la Fase , que vendria siendo el login y logout, vistas por rol, proteccion antes sql injectos, sesion de 30 minutos y el menú con el usuario y su rol
 
+4. Iniciamos la Fase 4: Rf-03 entrando como cliente1 y como encargado (contraseña fiores123). La siguiente es la Fase 3: catálogo para clientes (RF-03)
