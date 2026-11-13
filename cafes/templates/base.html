@@ -33,8 +33,10 @@
             <li class="nav-item"><a class="nav-link" href="{% url 'panel_encargado' %}">Panel</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'categoria_lista' %}">Categorías</a></li>
             <li class="nav-item"><a class="nav-link" href="{% url 'producto_lista' %}">Productos</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'pedidos_dia' %}">Pedidos del día</a></li>
           {% else %}
             <li class="nav-item"><a class="nav-link" href="{% url 'catalogo' %}">Catálogo</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'mis_pedidos' %}">Mis pedidos</a></li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'carrito' %}">
                 🛒 Carrito <span class="badge bg-light text-dark">{{ carrito_unidades|default:0 }}</span>

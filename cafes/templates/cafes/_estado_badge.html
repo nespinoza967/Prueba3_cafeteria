@@ -1,0 +1,1 @@
+<span class="badge {% if pedido.estado == 'PENDIENTE' %}bg-warning text-dark{% elif pedido.estado == 'EN_PREPARACION' %}bg-info text-dark{% elif pedido.estado == 'LISTO' %}bg-success{% elif pedido.estado == 'ENTREGADO' %}bg-secondary{% else %}bg-danger{% endif %}">{{ pedido.get_estado_display }}</span>

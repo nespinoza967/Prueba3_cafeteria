@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Pedidos del día · Cafetería Fiores{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Pedidos del día <small class="text-muted fs-6">{{ hoy|date:"d/m/Y" }}</small></h1>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a href="{% url 'pedidos_dia' %}" class="btn btn-sm {% if not estado %}btn-verde{% else %}btn-outline-secondary{% endif %}">Todos</a>
+  {% for valor, nombre in estados %}
+    <a href="?estado={{ valor }}" class="btn btn-sm {% if estado == valor %}btn-verde{% else %}btn-outline-secondary{% endif %}">{{ nombre }}</a>
+  {% endfor %}
+</div>
+
+{% for pedido in pedidos %}
+  <div class="card shadow-sm mb-3">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <strong>#{{ pedido.pk }}</strong> · {{ pedido.cliente.get_full_name|default:pedido.cliente.username }}
+        <small class="text-muted">· retiro <strong>{{ pedido.hora_retiro|time:"H:i" }}</strong></small>
+      </div>
+      {% include "cafes/_estado_badge.html" %}
+    </div>
+    <div class="card-body">
+      {% include "cafes/_detalle_tabla.html" %}
+      {% if pedido.observacion %}<p class="small text-muted mt-2 mb-0">Obs.: {{ pedido.observacion }}</p>{% endif %}
+    </div>
+    {% if pedido.siguiente_estado %}
+      <div class="card-footer text-end">
+        <form method="post" action="{% url 'pedido_avanzar' pedido.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="estado_actual" value="{{ pedido.estado }}">
+          <input type="hidden" name="volver" value="{{ request.get_full_path }}">
+          <button type="submit" class="btn btn-verde btn-sm">Pasar a {{ pedido.siguiente_estado_display }} &rarr;</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+{% empty %}
+  <div class="alert alert-info">No hay pedidos{% if estado %} en este estado{% endif %} para hoy.</div>
+{% endfor %}
+{% endblock %}

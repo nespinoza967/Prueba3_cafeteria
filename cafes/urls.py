@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from . import views
+from . import views, views_pedidos
 
 urlpatterns = [
     path("login/", auth_views.LoginView.as_view(redirect_authenticated_user=True), name="login"),
@@ -28,4 +28,10 @@ urlpatterns = [
     path("carrito/quitar/<int:pk>/", views.carrito_quitar, name="carrito_quitar"),
     path("carrito/vaciar/", views.carrito_vaciar, name="carrito_vaciar"),
     path("carrito/confirmar/", views.pedido_confirmar, name="pedido_confirmar"),
+
+    path("mis-pedidos/", views_pedidos.mis_pedidos, name="mis_pedidos"),
+    path("mis-pedidos/<int:pk>/", views_pedidos.pedido_detalle, name="pedido_detalle"),
+    path("mis-pedidos/<int:pk>/cancelar/", views_pedidos.pedido_cancelar, name="pedido_cancelar"),
+    path("encargado/pedidos/", views_pedidos.pedidos_dia, name="pedidos_dia"),
+    path("encargado/pedidos/<int:pk>/avanzar/", views_pedidos.pedido_avanzar, name="pedido_avanzar"),
 ]
