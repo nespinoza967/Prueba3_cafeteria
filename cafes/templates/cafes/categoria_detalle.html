@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}{{ categoria.nombre }} · Cafetería Fiores{% endblock %}
+{% block content %}
+<a href="{% url 'categoria_lista' %}" class="small">&larr; Volver a categorías</a>
+<div class="card shadow-sm mt-2 mb-4">
+  <div class="card-body">
+    <h1 class="h3">{{ categoria.nombre }}
+      {% if categoria.activa %}<span class="badge bg-success fs-6">Activa</span>
+      {% else %}<span class="badge bg-secondary fs-6">Inactiva</span>{% endif %}
+    </h1>
+    <p class="text-muted">{{ categoria.descripcion|default:"Sin descripción." }}</p>
+    <a href="{% url 'categoria_editar' categoria.pk %}" class="btn btn-verde">Editar</a>
+    <a href="{% url 'categoria_eliminar' categoria.pk %}" class="btn btn-outline-danger">Eliminar</a>
+  </div>
+</div>
+<h2 class="h5">Productos de esta categoría</h2>
+<ul class="list-group shadow-sm">
+  {% for p in productos %}
+    <li class="list-group-item d-flex justify-content-between">
+      <a href="{% url 'producto_detalle' p.pk %}">{{ p.codigo }} · {{ p.nombre }}</a>
+      <span>{{ p.precio|clp }}</span>
+    </li>
+  {% empty %}
+    <li class="list-group-item text-muted">No tiene productos.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

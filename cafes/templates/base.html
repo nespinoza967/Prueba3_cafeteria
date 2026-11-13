@@ -30,7 +30,9 @@
       <div class="collapse navbar-collapse" id="menu">
         <ul class="navbar-nav me-auto">
           {% if user.is_staff %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'panel_encargado' %}">Panel</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'panel_encargado' %}">Panel</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'categoria_lista' %}">Categorías</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'producto_lista' %}">Productos</a></li>
           {% else %}
             <li class="nav-item"><a class="nav-link" href="{% url 'catalogo' %}">Catálogo</a></li>
           {% endif %}

@@ -2,4 +2,16 @@
 {% block content %}
 <h1 class="h3">Panel del encargado</h1>
 <p class="text-muted">Desde aquí gestionarás el catálogo y los pedidos del día.</p>
+<div class="row g-3">
+  <div class="col-sm-6 col-lg-4">
+    <a href="{% url 'categoria_lista' %}" class="card shadow-sm text-decoration-none h-100">
+      <div class="card-body"><h2 class="h5">Categorías</h2><p class="text-muted mb-0">Crear, editar y eliminar categorías.</p></div>
+    </a>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <a href="{% url 'producto_lista' %}" class="card shadow-sm text-decoration-none h-100">
+      <div class="card-body"><h2 class="h5">Productos</h2><p class="text-muted mb-0">Gestionar productos, precios y stock.</p></div>
+    </a>
+  </div>
+</div>
 {% endblock %}

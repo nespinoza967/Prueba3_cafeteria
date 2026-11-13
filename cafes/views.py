@@ -1,6 +1,10 @@
-from django.shortcuts import redirect, render
+from django.contrib import messages
+from django.db.models import Count, ProtectedError, Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from .decorators import cliente_required, encargado_required
+from .forms import CategoriaForm, ProductoForm
 from .models import Categoria, Producto
 
 
@@ -39,3 +43,169 @@ def catalogo(request):
 @encargado_required
 def panel_encargado(request):
     return render(request, "cafes/panel_encargado.html")
+
+
+# ---------- Categorías ----------
+
+@encargado_required
+def categoria_lista(request):
+    categorias = Categoria.objects.annotate(num_productos=Count("productos"))
+    return render(request, "cafes/categoria_lista.html", {"categorias": categorias})
+
+
+@encargado_required
+def categoria_detalle(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    return render(request, "cafes/categoria_detalle.html", {
+        "categoria": categoria,
+        "productos": categoria.productos.all(),
+    })
+
+
+@encargado_required
+def categoria_crear(request):
+    form = CategoriaForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            categoria = form.save()
+            messages.success(request, f'Categoría "{categoria}" creada correctamente.')
+            return redirect("categoria_detalle", pk=categoria.pk)
+        messages.error(request, "No se pudo crear la categoría. Revisa los errores.")
+    return render(request, "cafes/form.html", {
+        "form": form,
+        "titulo": "Nueva categoría",
+        "volver": reverse("categoria_lista"),
+    })
+
+
+@encargado_required
+def categoria_editar(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    form = CategoriaForm(request.POST or None, instance=categoria)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Categoría "{categoria}" actualizada correctamente.')
+            return redirect("categoria_detalle", pk=categoria.pk)
+        messages.error(request, "No se pudo guardar la categoría. Revisa los errores.")
+    return render(request, "cafes/form.html", {
+        "form": form,
+        "titulo": f"Editar categoría: {categoria}",
+        "volver": reverse("categoria_detalle", args=[pk]),
+    })
+
+
+@encargado_required
+def categoria_eliminar(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    if request.method == "POST":
+        try:
+            categoria.delete()
+        except ProtectedError:
+            messages.error(
+                request,
+                f'No se puede eliminar "{categoria}" porque tiene productos asociados.',
+            )
+            return redirect("categoria_detalle", pk=pk)
+        messages.success(request, f'Categoría "{categoria}" eliminada correctamente.')
+        return redirect("categoria_lista")
+    return render(request, "cafes/confirmar_eliminar.html", {
+        "objeto": categoria,
+        "tipo": "la categoría",
+        "volver": reverse("categoria_detalle", args=[pk]),
+    })
+
+
+# ---------- Productos ----------
+
+@encargado_required
+def producto_lista(request):
+    categorias = Categoria.objects.all()
+    productos = Producto.objects.select_related("categoria")
+
+    q = request.GET.get("q", "").strip()
+    if q:
+        productos = productos.filter(Q(nombre__icontains=q) | Q(codigo__icontains=q))
+
+    categoria_id = request.GET.get("categoria", "")
+    if categoria_id.isdigit():
+        productos = productos.filter(categoria_id=int(categoria_id))
+    else:
+        categoria_id = ""
+
+    disponible = request.GET.get("disponible", "")
+    if disponible == "si":
+        productos = productos.filter(disponible=True)
+    elif disponible == "no":
+        productos = productos.filter(disponible=False)
+    else:
+        disponible = ""
+
+    return render(request, "cafes/producto_lista.html", {
+        "productos": productos,
+        "categorias": categorias,
+        "q": q,
+        "categoria_id": categoria_id,
+        "disponible": disponible,
+    })
+
+
+@encargado_required
+def producto_detalle(request, pk):
+    producto = get_object_or_404(Producto.objects.select_related("categoria"), pk=pk)
+    return render(request, "cafes/producto_detalle.html", {"producto": producto})
+
+
+@encargado_required
+def producto_crear(request):
+    form = ProductoForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            producto = form.save()
+            messages.success(request, f'Producto "{producto}" creado correctamente.')
+            return redirect("producto_detalle", pk=producto.pk)
+        messages.error(request, "No se pudo crear el producto. Revisa los errores.")
+    return render(request, "cafes/form.html", {
+        "form": form,
+        "titulo": "Nuevo producto",
+        "volver": reverse("producto_lista"),
+    })
+
+
+@encargado_required
+def producto_editar(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    form = ProductoForm(request.POST or None, instance=producto)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Producto "{producto}" actualizado correctamente.')
+            return redirect("producto_detalle", pk=producto.pk)
+        messages.error(request, "No se pudo guardar el producto. Revisa los errores.")
+    return render(request, "cafes/form.html", {
+        "form": form,
+        "titulo": f"Editar producto: {producto}",
+        "volver": reverse("producto_detalle", args=[pk]),
+    })
+
+
+@encargado_required
+def producto_eliminar(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    if request.method == "POST":
+        try:
+            producto.delete()
+        except ProtectedError:
+            messages.error(
+                request,
+                f'No se puede eliminar "{producto}" porque ya forma parte de pedidos. '
+                "Puedes marcarlo como no disponible.",
+            )
+            return redirect("producto_detalle", pk=pk)
+        messages.success(request, f'Producto "{producto}" eliminado correctamente.')
+        return redirect("producto_lista")
+    return render(request, "cafes/confirmar_eliminar.html", {
+        "objeto": producto,
+        "tipo": "el producto",
+        "volver": reverse("producto_detalle", args=[pk]),
+    })

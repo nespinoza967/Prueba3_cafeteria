@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}{{ producto.nombre }} · Cafetería Fiores{% endblock %}
+{% block content %}
+<a href="{% url 'producto_lista' %}" class="small">&larr; Volver a productos</a>
+<div class="card shadow-sm mt-2">
+  <div class="card-body">
+    <span class="badge bg-secondary mb-2">{{ producto.categoria.nombre }}</span>
+    <h1 class="h3">{{ producto.nombre }}</h1>
+    <dl class="row mb-4">
+      <dt class="col-sm-3">Código</dt><dd class="col-sm-9">{{ producto.codigo }}</dd>
+      <dt class="col-sm-3">Precio</dt><dd class="col-sm-9">{{ producto.precio|clp }}</dd>
+      <dt class="col-sm-3">Stock</dt><dd class="col-sm-9">{{ producto.stock }}</dd>
+      <dt class="col-sm-3">Disponible</dt><dd class="col-sm-9">{{ producto.disponible|yesno:"Sí,No" }}</dd>
+      <dt class="col-sm-3">Creado</dt><dd class="col-sm-9">{{ producto.creado|date:"d/m/Y H:i" }}</dd>
+    </dl>
+    <a href="{% url 'producto_editar' producto.pk %}" class="btn btn-verde">Editar</a>
+    <a href="{% url 'producto_eliminar' producto.pk %}" class="btn btn-outline-danger">Eliminar</a>
+  </div>
+</div>
+{% endblock %}
