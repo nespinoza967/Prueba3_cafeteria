@@ -129,8 +129,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'inicio'
 LOGOUT_REDIRECT_URL = 'login'
- sesión expira tras 30 minutos sin actividad
-# La
+
+# La sesión expira tras 30 minutos sin actividad
 SESSION_COOKIE_AGE = 30 * 60
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = True

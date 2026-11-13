@@ -33,7 +33,7 @@
           <h2 class="h5 card-title">{{ p.nombre }}</h2>
           <p class="fs-5 fw-semibold mb-3">{{ p.precio|clp }}</p>
           <div class="mt-auto">
-                        {% if p.stock == 0 %}
+            {% if p.stock == 0 %}
               <span class="badge bg-danger">Agotado</span>
               <button type="button" class="btn btn-secondary btn-sm float-end" disabled>No disponible</button>
             {% else %}
