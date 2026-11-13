@@ -8,3 +8,5 @@ Extra: user admin pass: 1231
 3. vamos con la Fase , que vendria siendo el login y logout, vistas por rol, proteccion antes sql injectos, sesion de 30 minutos y el menú con el usuario y su rol
 
 4. Iniciamos la Fase 4: Rf-03 entrando como cliente1 y como encargado (contraseña fiores123). La siguiente es la Fase 3: catálogo para clientes (RF-03)
+
+5. Ya termine la parte de RF-04 y RF-05, en temas de backend no utilice IA, pero en la parte de HTML mejora y deja mas bonito los archivos, _campo.html, carrito_html, categoria_detalle.html, categoria_lista.html, confirmar_eliminar.html, confirmar_pedido y form.html

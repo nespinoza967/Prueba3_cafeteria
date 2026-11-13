@@ -35,7 +35,12 @@
             <li class="nav-item"><a class="nav-link" href="{% url 'producto_lista' %}">Productos</a></li>
           {% else %}
             <li class="nav-item"><a class="nav-link" href="{% url 'catalogo' %}">Catálogo</a></li>
-          {% endif %}
+                      <li class="nav-item">
+              <a class="nav-link" href="{% url 'carrito' %}">
+                🛒 Carrito <span class="badge bg-light text-dark">{{ carrito_unidades|default:0 }}</span>
+              </a>
+            </li>
+            {% endif %}
           {% block menu %}{% endblock %}
         </ul>
         <span class="navbar-text text-white me-3">

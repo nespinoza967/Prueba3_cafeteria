@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load formato %}
+{% block title %}Confirmar pedido · Cafetería Fiores{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">Confirmar pedido</h1>
+<div class="row g-4">
+  <div class="col-md-6">
+    <ul class="list-group shadow-sm">
+      {% for l in lineas %}
+        <li class="list-group-item d-flex justify-content-between">
+          <span>{{ l.cantidad }} × {{ l.producto.nombre }}</span>
+          <span>{{ l.subtotal|clp }}</span>
+        </li>
+      {% endfor %}
+      <li class="list-group-item d-flex justify-content-between fw-bold">
+        <span>Total</span><span>{{ total|clp }}</span>
+      </li>
+    </ul>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for campo in form %}
+            {% include "cafes/_campo.html" %}
+          {% endfor %}
+          <p class="small text-muted">Retiro entre las 08:00 y las 18:00, al menos 20 minutos desde ahora.</p>
+          <button type="submit" class="btn btn-verde">Confirmar pedido</button>
+          <a href="{% url 'carrito' %}" class="btn btn-outline-secondary">Volver al carrito</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

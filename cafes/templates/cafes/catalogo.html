@@ -33,12 +33,16 @@
           <h2 class="h5 card-title">{{ p.nombre }}</h2>
           <p class="fs-5 fw-semibold mb-3">{{ p.precio|clp }}</p>
           <div class="mt-auto">
-            {% if p.stock == 0 %}
+                        {% if p.stock == 0 %}
               <span class="badge bg-danger">Agotado</span>
               <button type="button" class="btn btn-secondary btn-sm float-end" disabled>No disponible</button>
             {% else %}
               <small class="text-muted">Stock: {{ p.stock }}</small>
-              {# RF-05: aquí va el formulario para agregar al carrito #}
+              <form method="post" action="{% url 'carrito_agregar' p.pk %}" class="d-flex gap-2 mt-2">
+                {% csrf_token %}
+                <input type="number" name="cantidad" value="1" min="1" max="{{ p.stock }}" class="form-control form-control-sm" style="max-width: 5rem;">
+                <button type="submit" class="btn btn-verde btn-sm">Agregar</button>
+              </form>
             {% endif %}
           </div>
         </div>

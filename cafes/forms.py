@@ -1,6 +1,9 @@
 import re
 from django import forms
 from .models import Categoria, Producto
+from datetime import time, timedelta
+from django.utils import timezone
+from .carrito import MAX_UNIDADES
 
 CODIGO_RE = re.compile(r"^CAF-\d{3}$")
 
@@ -59,3 +62,32 @@ class ProductoForm(BootstrapMixin, forms.ModelForm):
         if stock < 0:
             raise forms.ValidationError("El stock no puede ser negativo.")
         return stock
+
+class CantidadForm(forms.Form):
+    cantidad = forms.IntegerField(min_value=1, max_value=MAX_UNIDADES)
+
+
+class ConfirmarPedidoForm(BootstrapMixin, forms.Form):
+    hora_retiro = forms.TimeField(
+        label="Hora de retiro",
+        widget=forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+    )
+    observacion = forms.CharField(
+        label="Observación",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+
+    def clean_hora_retiro(self):
+        hora = self.cleaned_data["hora_retiro"]
+        if not time(8, 0) <= hora <= time(18, 0):
+            raise forms.ValidationError("La hora de retiro debe estar entre las 08:00 y las 18:00.")
+        ahora = timezone.localtime()
+        minima = ahora + timedelta(minutes=20)
+        retiro = ahora.replace(hour=hora.hour, minute=hora.minute, second=0, microsecond=0)
+        if retiro < minima:
+            raise forms.ValidationError(
+                f"La hora de retiro debe ser al menos 20 minutos después de la hora actual "
+                f"(desde las {minima:%H:%M})."
+            )
+        return hora

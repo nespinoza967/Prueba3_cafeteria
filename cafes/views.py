@@ -2,9 +2,11 @@ from django.contrib import messages
 from django.db.models import Count, ProtectedError, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
+from .carrito import Carrito, StockInsuficiente, crear_pedido
 from .decorators import cliente_required, encargado_required
-from .forms import CategoriaForm, ProductoForm
+from .forms import CantidadForm, CategoriaForm, ConfirmarPedidoForm, ProductoForm
 from .models import Categoria, Producto
 
 
@@ -208,4 +210,103 @@ def producto_eliminar(request, pk):
         "objeto": producto,
         "tipo": "el producto",
         "volver": reverse("producto_detalle", args=[pk]),
+    })
+
+
+
+# carito
+
+@cliente_required
+def carrito_ver(request):
+    carrito = Carrito(request)
+    lineas = carrito.lineas()
+    return render(request, "cafes/carrito.html", {
+        "lineas": lineas,
+        "total": sum(l["subtotal"] for l in lineas),
+        "unidades": carrito.unidades(),
+    })
+
+
+@cliente_required
+@require_POST
+def carrito_agregar(request, pk):
+    producto = get_object_or_404(Producto, pk=pk, disponible=True, categoria__activa=True)
+    form = CantidadForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "La cantidad indicada no es válida.")
+        return redirect("catalogo")
+    carrito = Carrito(request)
+    error = carrito.fijar(producto, carrito.cantidad(pk) + form.cleaned_data["cantidad"])
+    if error:
+        messages.error(request, error)
+    else:
+        messages.success(request, f'"{producto.nombre}" agregado al carrito.')
+    return redirect("catalogo")
+
+
+@cliente_required
+@require_POST
+def carrito_actualizar(request, pk):
+    producto = get_object_or_404(Producto, pk=pk)
+    form = CantidadForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "La cantidad indicada no es válida.")
+        return redirect("carrito")
+    error = Carrito(request).fijar(producto, form.cleaned_data["cantidad"])
+    if error:
+        messages.error(request, error)
+    else:
+        messages.success(request, f'Cantidad de "{producto.nombre}" actualizada.')
+    return redirect("carrito")
+
+
+@cliente_required
+@require_POST
+def carrito_quitar(request, pk):
+    Carrito(request).quitar(pk)
+    messages.success(request, "Producto quitado del carrito.")
+    return redirect("carrito")
+
+
+@cliente_required
+@require_POST
+def carrito_vaciar(request):
+    Carrito(request).vaciar()
+    messages.success(request, "Carrito vaciado.")
+    return redirect("carrito")
+
+
+@cliente_required
+def pedido_confirmar(request):
+    carrito = Carrito(request)
+    lineas = carrito.lineas()
+    if not lineas:
+        messages.error(request, "Tu carrito está vacío.")
+        return redirect("catalogo")
+
+    form = ConfirmarPedidoForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            try:
+                pedido = crear_pedido(
+                    request.user,
+                    carrito,
+                    form.cleaned_data["hora_retiro"],
+                    form.cleaned_data["observacion"],
+                )
+            except StockInsuficiente as error:
+                messages.error(request, str(error))
+                return redirect("carrito")
+            carrito.vaciar()
+            messages.success(
+                request,
+                f"Pedido #{pedido.pk} confirmado. Retíralo a las {pedido.hora_retiro:%H:%M}.",
+            )
+            return redirect("catalogo")
+        messages.error(request, "No se pudo confirmar el pedido. Revisa los errores.")
+
+    return render(request, "cafes/confirmar_pedido.html", {
+        "form": form,
+        "lineas": lineas,
+        "total": sum(l["subtotal"] for l in lineas),
     })
